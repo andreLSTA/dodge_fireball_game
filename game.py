@@ -29,7 +29,7 @@ class Fireball():
 		self.mask = pygame.mask.from_surface(self.fireball_img)
 		self.angle = angle
 		self.frame = 0
-		self.speed = 5
+		self.speed = 10
 		self.not_in_the_screen = False
 
 	def draw(self, window):
@@ -79,8 +79,8 @@ class Player():
 		self.flip = False
 
 	def draw(self, window):
-		self.frame = (self.frame + 1) % (4*len(PLAYER))
-		self.player_img = pygame.transform.flip(PLAYER[int(self.frame/4 - 1)], self.flip, False)
+		self.frame = (self.frame + 1) % (2.5*len(PLAYER))
+		self.player_img = pygame.transform.flip(PLAYER[int(self.frame/2.5 - 1)], self.flip, False)
 		self.mask = pygame.mask.from_surface(self.player_img)
 		x, y = self.rect.center
 		self.rect = self.player_img.get_rect()
@@ -121,28 +121,6 @@ class Player():
 		self.rect = self.player_img.get_rect()
 		self.rect.center = (current_x, current_y)
 
-	def move(self, mouse_position_x, mouse_position_y):
-		current_x, current_y = self.rect.center
-		self.angle = math.degrees(math.atan2((current_y - mouse_position_y), (mouse_position_x - current_x))) % 360
-		angle = math.radians(self.angle)
-		x = self.speed*math.cos(angle)
-
-		if(abs(x) != 5 and abs(x) >= 0.001):
-			if(x > 0):
-				self.flip = False
-			else:
-				self.flip = True
-
-		if(current_x + x >= 0 and current_x + x <= WIDTH):
-			current_x += x
-
-		y = -self.speed*math.sin(angle)
-		if(current_y + y >= HEIGHT*0.34 and current_y + y <= HEIGHT):
-			current_y += y
-
-		self.rect = self.player_img.get_rect()
-		self.rect.center = (current_x, current_y)
-
 	def collidedWith(self, obj):
 		return pygame.sprite.spritecollide(self, [obj], False, pygame.sprite.collide_mask)
 
@@ -174,7 +152,7 @@ def runGame(FPS, clock):
 	run = True
 	fireballs_survived = 0
 	quantity_fireballs = 5
-	level = 1
+	wave = 1
 	player = Player(WIDTH/2, HEIGHT/2)
 	fireballs = []
 	
@@ -186,7 +164,7 @@ def runGame(FPS, clock):
 
 		pygame.font.init()
 		myfont = pygame.font.SysFont("monospace", 15)
-		label = myfont.render("Level: " + str(level), 1, (255,255,255))
+		label = myfont.render("Wave: " + str(wave), 1, (255,255,255))
 		WIN.blit(label, (WIDTH - 100, 15))
 				
 		pygame.display.update()	
@@ -199,14 +177,16 @@ def runGame(FPS, clock):
 			if event.type == pygame.QUIT:
 				run = False
 
-		if(fireballs_survived == quantity_fireballs):
+		if(len(fireballs) == 0):
+
 			quantity_fireballs += 1
-			level += 1
+			wave += 1
 			fireballs_survived = 0
 
-		while len(fireballs) < quantity_fireballs:
-			fireballs.append(generateFireball(player.rect.center[0], player.rect.center[1]))
+			while len(fireballs) < quantity_fireballs:
+				fireballs.append(generateFireball(player.rect.center[0], player.rect.center[1]))
 
+		
 		keys = pygame.key.get_pressed()
 		if(keys[pygame.K_a]):
 			player.moveLeft()
@@ -217,21 +197,21 @@ def runGame(FPS, clock):
 		if(keys[pygame.K_s]):
 			player.moveDown()
 
-		mouse_right_click = pygame.mouse.get_pressed()[2]
-		if(mouse_right_click):
-			mouse_position_x, mouse_position_y = pygame.mouse.get_pos()
-			player.move(mouse_position_x, mouse_position_y)
+		to_remove = []
 
-		for fireball in fireballs:
-			fireball.move()
+		for fireball_index, fireball in enumerate(fireballs):
 			
-			if(player.collidedWith(fireball)):
+			if(player.collidedWith(fireballs[fireball_index])):
 				run = False
 				break
 
-			if(fireball.not_in_the_screen):
-				fireballs.remove(fireball)
-				fireballs_survived += 1
+			fireballs[fireball_index].move()
+			
+			if(fireballs[fireball_index].not_in_the_screen):
+				to_remove.append(fireball_index)
+
+		for fireball_index in reversed(to_remove):
+			del fireballs[fireball_index]
 
 def gameOverScreen(FPS, clock):
 	run = True
@@ -239,17 +219,34 @@ def gameOverScreen(FPS, clock):
 		clock.tick(FPS)
 		myfont = pygame.font.SysFont("monospace", 50)
 		label = myfont.render("Game Over", 1, (255,255,255))
+		myfont_2 = pygame.font.SysFont("monospace", 25)
+		label_2 = myfont_2.render("(press R to restart)", 1, (255,255,255))
+		
 		WIN.blit(label, (WIDTH*0.37, HEIGHT*0.5))
+		WIN.blit(label_2, (WIDTH*0.36, HEIGHT*0.6))
 		pygame.display.update()
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				run = False
 
+		keys = pygame.key.get_pressed()
+		if(keys[pygame.K_r]):
+			break	
+
+	return run
+
+
 def main():
 	FPS = 60
 	clock = pygame.time.Clock()
-	runGame(FPS, clock)	
-	gameOverScreen(FPS, clock)			
+	run = True
+	while(run):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				run = False
+		
+		runGame(FPS, clock)	
+		run = gameOverScreen(FPS, clock)			
 				
 main()
