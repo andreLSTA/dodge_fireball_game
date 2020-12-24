@@ -1,6 +1,6 @@
 # Dodge Fireball Game
 
-A simple game made for personal learning. The goal is to survive in a forest with random fireballs coming in your direction. This game was created in the purpose of learning neural networks applied in games.
+A simple game made for personal learning. This game was created to learn neural networks applied in games in a evolutionary model.
 
 ## Requirements
 - [python 3.6](https://www.python.org/downloads/release/python-360/)
@@ -42,14 +42,14 @@ $ python3 FILE_YOU_CHOSE.py
 
 ### Bot training
 
-If you run:
+If you run the command below, a new neural network can be created based on your training:
 
 ```bash
 $ python3 bot_training.py
 ```
 
-Whenever all the population dies, the game stops and generates a file named "neural_network.p". To replace the AI used in the bots, you can rename it to "bot_neural_network.p", so the file used by the bots can be changed to the new one generated on your training and you can test it. 
+The details of each generation are shown in the terminal. Whenever the whole population dies, the game generates a file named "neural_network.p", until reaching a desirable number of waves survived. To replace the AI used in the bots, you can rename it to "bot_neural_network.p", so the bots will switch their behavior to this new one generated on your training. 
 
-After cloning/downloading this project, it will have an initial "bot_neural_network.p", so you won't need to train it again if you're just testing the game. But for the one wanting to watch the process of learning you can execute the previous steps.
+After cloning/downloading this project, it will have an initial "bot_neural_network.p", so you won't need to train it again if you're just testing the game. But for the ones wanting to watch the process of learning you can execute the previous steps.
 
 
